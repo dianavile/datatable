@@ -1,14 +1,127 @@
-<simple-table :header="header":data="data" :config="{sort: true}">
+<my-table ref="my_table"
+  v-bind="{header, body, data}"
+  :config="{
+    table_class: 'table margin-0', 
+    checkbox: true, 
+    context_menu: true,
+    edit_row: true, 
+    delete_row: true,
+    sort: true,
+    undo_cell: true,
+    undo_row: true
+  }" @edit="edit" @set_checkbox="set_checkbox" @edit_row_emit="edit_row">
+  
+  <template slot="edit_row" scope="res">
+    <form @submit.prevent="submit_row(res.row)" role="form" 
+    @keyup.esc="$refs.my_table.close">
 
-header: [
-  {title: 'Abc', key: 'test'}, 
-  {title: 'Def', key: 'test_2'}
-]
-data: [
-  {
-    test: 'Lorem ip sum',
-    test_2: 'Lorem ip dolor'
-  }
-]
+      <div class="col-md-5 col-md-offset-1">
+        <div class="form-group">
+          <label for="title">Title</label>
+          <input type="text" class="form-control input-sm" v-focus id="title" 
+          placeholder="Title" v-model="action.edit_row.title">
+        </div>
+      
+        <div class="form-group">
+          <label for="create">Created</label>
 
-</simple-table>
+          <dropdown class="form-group">
+            <div class="input-group col-xs-12">
+              <input type="text" class="form-control input-sm" id="create" placeholder="Created" 
+              v-model="action.edit_row.create" data-role="trigger">
+              <label for="create" class="input-group-addon">
+                <i class="fa fa-calendar-o"></i>
+              </label>
+            </div>
+            <template slot="dropdown">
+              <li>
+                <date-picker v-model="action.edit_row.create"></date-picker>
+              </li>
+            </template>
+          </dropdown>
+        </div>
+      </div>
+
+      <div class="col-md-5">
+      
+        <div class="form-group">
+          <label for="category">Category</label>
+          <div class="input-group col-xs-12">
+            <select name="category" id="category" class="form-control input-sm" 
+            v-model="action.edit_row.category">
+              <option :value="'Default'">Default</option>
+              <option :value="'Internet'">Internet</option>
+              <option :value="'Cooking'">Cooking</option>
+            </select>
+            <label for="category" class="input-group-addon">
+              <i class="fa fa-folder-open-o"></i>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="author">Author</label>
+          <div class="input-group col-xs-12">
+            <input type="text" class="form-control input-sm" 
+            id="author" placeholder="Author" 
+            v-model="action.edit_row.author">
+            <label for="author" class="input-group-addon">
+              <i class="fa fa-user-o"></i>
+            </label>
+          </div>
+        </div>
+      </div>
+    
+      <div class="col-md-10 col-md-offset-1">
+        <div class="input-group">
+          <button type="submit" class="btn btn-flat btn-sm btn-primary">Submit</button>
+          <button type="button" class="btn btn-flat btn-sm btn-default" 
+          @click.prevent="$refs.my_table.close()">Cancel</button>
+        </div>
+      </div>
+    </form>
+  </template>
+  
+  <template slot="input" scope="res">
+    <input type="text" v-focus v-selected v-model="action.edit_value"
+    class="input-sm form-control" @blur="reset_edit(res)" 
+    @keydown.enter="submit(res)" @keydown.esc="reset_edit(res)">
+  </template>
+
+  <template slot="select" scope="res">
+    <select v-focus class="input-sm form-control" 
+    v-model="action.edit_value" @blur="submit(res)"
+    @keydown.enter="submit(res)" @keydown.esc="reset_edit(res)">
+      <option :value="'Default'">Default</option>
+      <option :value="'Internet'">Internet</option>
+      <option :value="'Cooking'">Cooking</option>
+    </select>
+  </template>
+
+  <template slot="calendar" scope="res">
+    <dropdown class="form-group">
+      <div class="input-group">
+        <input type="text" v-focus v-selected v-model="action.edit_value"
+        class="form-control input-sm" placeholder="Created" 
+        @keydown.enter="submit(res)" @keydown.esc="reset_edit(res)" data-role="trigger">
+      </div>
+      <template slot="dropdown">
+        <li>
+          <date-picker v-model="action.edit_value"></date-picker>
+        </li>
+      </template>
+    </dropdown>
+  </template>
+  
+  <template slot="textarea" scope="res">
+    <textarea rows="1" v-focus class="input-sm form-control" 
+    @blur="reset_edit(res)" @keydown.enter="submit(res)"
+    @keydown.esc="reset_edit(res)" v-model="action.edit_value"></textarea>
+  </template>
+  
+  <template slot="list_context" scope="res">
+    <li @click.prevent="say(res.row)">
+      <i class="fa fa-th"></i> <span>Custom menu</span>
+    </li>
+  </template>
+</my-table>
